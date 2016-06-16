@@ -1,3 +1,8 @@
+;; this is a version of Merge.kif with temporary fixes for some
+;; contradictions found.  The fixes can either be commenting out the
+;; subrelation or something else.  The reference number is the SUMO
+;; issue at github (https://github.com/ontologyportal/sumo/issues)
+
 ;; ================================================
 ;;      SUMO (Suggested Upper Merged Ontology)
 ;; ================================================                                            
@@ -145,7 +150,7 @@ a subclass of ?CLASS2, i.e. every instance of ?CLASS1 is also an instance of
     (instance ?Z ?X))
   (instance ?Z ?Y))
 
-(subrelation immediateSubclass subclass)
+;;;; <fcbr: contradiction #9> (subrelation immediateSubclass subclass)
 (instance immediateSubclass AsymmetricRelation)
 (instance immediateSubclass IntransitiveRelation)
 (documentation immediateSubclass EnglishLanguage "A &%SetOrClass ?CLASS1 is an &%immediateSubclass 
@@ -531,11 +536,36 @@ instance of one of the subclasses in the set.  Note:  this does not necessarily
 mean that the elements of the set are disjoint (see &%partition - a &%partition 
 is a disjoint exhaustive decomposition).")
 
+;;;; <fcbr>
+;;;; (=>
+;;;;    (exhaustiveDecomposition @ROW)
+;;;;    (=>
+;;;;       (inList ?ELEMENT (ListFn @ROW))
+;;;;       (instance ?ELEMENT Class)))
+
+;;;; <fcbr>
 (=>
-   (exhaustiveDecomposition @ROW)
-   (=>
-      (inList ?ELEMENT (ListFn @ROW))
-      (instance ?ELEMENT Class)))
+   (exhaustiveDecomposition ?CLASS ?ROW0 ?ROW1)
+   (and (instance ?CLASS Class) 
+        (instance ?ROW0 Class) 
+        (instance ?ROW1 Class)))
+
+;;;; <fcbr>
+(=>
+   (exhaustiveDecomposition ?CLASS ?ROW0 ?ROW1 ?ROW2)
+   (and (instance ?CLASS Class)
+        (instance ?ROW0 Class) 
+        (instance ?ROW1 Class)
+        (instance ?ROW2 Class)))
+
+;;;; <fcbr>
+(=>
+   (exhaustiveDecomposition ?CLASS ?ROW0 ?ROW1 ?ROW2 ?ROW3)
+   (and (instance ?CLASS Class) 
+        (instance ?ROW0 Class) 
+        (instance ?ROW1 Class)
+        (instance ?ROW2 Class)
+        (instance ?ROW3 Class)))
 
 (instance disjointDecomposition Predicate)
 (instance disjointDecomposition VariableArityRelation)
@@ -546,11 +576,36 @@ is a disjoint exhaustive decomposition).")
 (documentation disjointDecomposition EnglishLanguage "A &%disjointDecomposition of a &%Class 
 C is a set of subclasses of C that are mutually &%disjoint.")
 
+;;;; <fcbr>
+;;;; (=>
+;;;;    (disjointDecomposition @ROW)
+;;;;    (=>
+;;;;       (inList ?ELEMENT (ListFn @ROW))
+;;;;       (instance ?ELEMENT Class)))
+
+;;;; <fcbr>
 (=>
-   (disjointDecomposition @ROW)
-   (=>
-      (inList ?ELEMENT (ListFn @ROW))
-      (instance ?ELEMENT Class)))
+   (disjointDecomposition ?CLASS ?ROW0 ?ROW1)
+   (and (instance ?CLASS Class)
+        (instance ?ROW0 Class)
+        (instance ?ROW1 Class)))
+
+;;;; <fcbr>
+(=>
+   (disjointDecomposition ?CLASS ?ROW0 ?ROW1 ?ROW2)
+   (and (instance ?CLASS Class)
+        (instance ?ROW0 Class)
+        (instance ?ROW1 Class)
+        (instance ?ROW2 Class)))
+
+;;;; <fcbr>
+(=>
+   (disjointDecomposition ?CLASS ?ROW0 ?ROW1 ?ROW2 ?ROW3)
+   (and (instance ?CLASS Class)
+        (instance ?ROW0 Class)
+        (instance ?ROW1 Class)
+        (instance ?ROW2 Class)
+        (instance ?ROW3 Class)))
 
 (instance partition Predicate)
 (instance partition VariableArityRelation)
@@ -649,6 +704,23 @@ on the scale that they share.")
       (and
          (temporalPart ?TIME2 (PastFn ?TIME1))
          (holdsDuring ?TIME2 (property ?ENTITY ?ATTR1)))))
+
+;; (instance tt TruthValue)
+;; (instance ff TruthValue)
+
+;; (=>
+;;  (and
+;;   (successorAttribute ?ATTR1 ?ATTR2)
+;;   (exists (?AUX1)
+;;           (and (<=> (equal tt ?AUX) (property ?ENTITY ?ATTR2))
+;;                (holdsDuring ?TIME1 ?AUX))))
+;;  (exists (?TIME2)
+;;          (and
+;;           (temporalPart ?TIME2 (PastFn ?TIME1))
+;;           (exists (?AUX2)
+;;                   (and
+;;                    (<=> (equal tt ?AUX2) (property ?ENTITY ?ATTR1))
+;;                    (holdsDuring ?TIME2 ?AUX2))))))
 
 (instance successorAttributeClosure BinaryPredicate)
 (instance successorAttributeClosure TransitiveRelation)
@@ -882,7 +954,7 @@ encompasses the concepts of 'composed of', 'made of', and 'formed of'.
 For example, plastic is a &%material of my computer monitor.  Compare 
 &%part and its subrelations, viz &%component and &%piece.")
 
-(subrelation contains partlyLocated)
+;;;; <fcbr: contradiction #15> (subrelation contains partlyLocated)
 (instance contains SpatialRelation)
 (instance contains AsymmetricRelation)
 (instance contains PartialValuedRelation)
@@ -1100,7 +1172,7 @@ of sheep.")
   (exists (?OBJ)
     (member ?OBJ ?COLL)))
 
-(subrelation member part)
+;;;; <fcbr: contradiction #8> (subrelation member part)
 (instance member AsymmetricRelation)
 (instance member IntransitiveRelation)
 (domain member 1 Object)
@@ -2537,35 +2609,75 @@ two &%Lists with the same items in the same order are identical.")
 (documentation ListFn EnglishLanguage "A &%Function that takes any number of arguments and 
 returns the &%List containing those arguments in exactly the same order.")
 
+;;;; <fcbr>
+;;;; (=>
+;;;;    (exhaustiveDecomposition ?CLASS @ROW)
+;;;;    (forall (?OBJ)
+;;;;       (=>
+;;;;          (instance ?OBJ ?CLASS)
+;;;;          (exists (?ITEM)
+;;;;             (and
+;;;;                (inList ?ITEM (ListFn @ROW))
+;;;;                (instance ?OBJ ?ITEM))))))
+
 (=>
-   (exhaustiveDecomposition ?CLASS @ROW)
+   (exhaustiveDecomposition ?CLASS ?ROW1 ?ROW2)
    (forall (?OBJ)
       (=>
          (instance ?OBJ ?CLASS)
-         (exists (?ITEM)
-            (and
-               (inList ?ITEM (ListFn @ROW))
-               (instance ?OBJ ?ITEM))))))
+         (or (instance ?OBJ ?ROW1)
+             (instance ?OBJ ?ROW2)))))
 
 (=>
-   (disjointDecomposition ?CLASS @ROW)
-   (forall (?ITEM)
+   (exhaustiveDecomposition ?CLASS ?ROW1 ?ROW2 ?ROW3)
+   (forall (?OBJ)
       (=>
-         (inList ?ITEM (ListFn @ROW))
-         (subclass ?ITEM ?CLASS))))
+         (instance ?OBJ ?CLASS)
+         (or (instance ?OBJ ?ROW1)
+             (instance ?OBJ ?ROW2)
+             (instance ?OBJ ?ROW3)))))
 
+;;;; <fcbr>
+;;;; (=>
+;;;;    (disjointDecomposition ?CLASS @ROW)
+;;;;    (forall (?ITEM)
+;;;;       (=>
+;;;;          (inList ?ITEM (ListFn @ROW))
+;;;;          (subclass ?ITEM ?CLASS))))
+
+;;;; <fcbr>
 (=>
-   (disjointDecomposition ?CLASS @ROW)
-   (forall (?ITEM1 ?ITEM2)
-      (=>
-         (and
-            (inList ?ITEM1 (ListFn @ROW))
-            (inList ?ITEM2 (ListFn @ROW))
-            (not
-               (equal ?ITEM1 ?ITEM2)))
-         (disjoint ?ITEM1 ?ITEM2))))
+   (disjointDecomposition ?CLASS ?ROW1 ?ROW2)
+   (and (subclass ?ROW1 ?CLASS)
+        (subclass ?ROW2 ?CLASS)))
 
-(<=>
+;;;; <fcbr>
+(=>
+   (disjointDecomposition ?CLASS ?ROW1 ?ROW2 ?ROW3)
+   (and (subclass ?ROW1 ?CLASS)
+        (subclass ?ROW2 ?CLASS)
+        (subclass ?ROW3 ?CLASS)))
+
+;;;; <fcbr>
+;;;; (=>
+;;;;    (disjointDecomposition ?CLASS @ROW)
+;;;;    (forall (?ITEM1 ?ITEM2)
+;;;;       (=>
+;;;;          (and
+;;;;             (inList ?ITEM1 (ListFn @ROW))
+;;;;             (inList ?ITEM2 (ListFn @ROW))
+;;;;             (not
+;;;;                (equal ?ITEM1 ?ITEM2)))
+;;;;          (disjoint ?ITEM1 ?ITEM2))))
+
+;;;; <fcbr> see comment below
+(=>
+  (disjointDecomposition ?CLASS ?ROW1 ?ROW2)
+  (disjoint ?ROW1 ?ROW2))
+
+;;;; <fcbr> this was an equivalence originally, but this lead to an
+;;;; inconsistency (see SUMO issue #14).  Changed to implication
+(=>
   (disjointDecomposition ?CLASS ?ROW1 ?ROW2 ?ROW3)
   (and
     (disjoint ?ROW1 ?ROW2)
@@ -3193,7 +3305,7 @@ imply temporal ordering.")
 (domain causes 1 Process)
 (domain causes 2 Process)
 (relatedInternalConcept causes causesSubclass)
-(subrelation causes relatedEvent)
+;;; <fcbr: contradiction 21#> (subrelation causes relatedEvent)
 (documentation causes EnglishLanguage "The causation relation between instances of &%Process.  
 (&%causes ?PROCESS1 ?PROCESS2) means that the instance of &%Process ?PROCESS1 
 brings about the instance of &%Process ?PROCESS2.")
@@ -3464,7 +3576,7 @@ an immediate &%subrelation of &%located.")
 
 (instance eventPartlyLocated CaseRole)
 (instance eventPartlyLocated PartialValuedRelation)
-(subrelation eventPartlyLocated partlyLocated)
+;; <fcbr: contradiction #13> (subrelation eventPartlyLocated partlyLocated)
 (domain eventPartlyLocated 1 Process)
 (domain eventPartlyLocated 2 Object)
 (documentation eventPartlyLocated EnglishLanguage "(&%eventPartlyLocated ?PROC ?OBJ)
@@ -3845,7 +3957,7 @@ not just for a single instance.")
           (instance ?OBJ1 ?CLASS1)
           (containsInformation ?OBJ1 ?INFO))))))
 
-(subrelation equivalentContentInstance subsumesContentInstance)
+;;;; <fcbr: contradiction #19> (subrelation equivalentContentInstance subsumesContentInstance)
 (instance equivalentContentInstance EquivalenceRelation)
 (domain equivalentContentInstance 1 ContentBearingPhysical)
 (domain equivalentContentInstance 2 ContentBearingPhysical)
@@ -6661,7 +6773,7 @@ separates two distinct objects.")
    (distance ?OBJ1 ?OBJ2 ?QUANT)
    (distance ?OBJ2 ?OBJ1 ?QUANT))
 
-(subrelation altitude distance)
+;;;; <fcbr: contradiction #17> (subrelation altitude distance)
 (instance altitude SingleValuedRelation)
 (instance altitude PartialValuedRelation)
 (documentation altitude EnglishLanguage "A &%TernaryPredicate that is
@@ -7117,7 +7229,7 @@ have a &%TimeInterval as a common part.")
       (?REL ?OBJ1 ?OBJ2))
    (overlapsTemporally (WhenFn ?OBJ1) (WhenFn ?OBJ2)))
 
-(subrelation during temporalPart)
+;;;; <fcbr: contradiction 22#> (subrelation during temporalPart)
 (instance during TransitiveRelation)
 (instance during IrreflexiveRelation)
 (subrelation during overlapsTemporally)
@@ -8037,7 +8149,7 @@ is a &%part of the other.")
   (overlapsPartially ?OBJ1 ?OBJ2)
   (overlapsSpatially ?OBJ1 ?OBJ2))
 
-(subrelation superficialPart part)
+;;;; <fcbr: contradiction #16> (subrelation superficialPart part)
 (instance superficialPart IrreflexiveRelation)
 (instance superficialPart TransitiveRelation)
 (instance superficialPart PartialValuedRelation)
@@ -10139,32 +10251,34 @@ the aim is to determine the &%PhysicalQuantity of some aspect of the &%patient."
 which involve the formulation of a &%Proposition about a state of affairs 
 which might be realized in the future.")
 
-(=>
-   (and
-      (instance ?PREDICT Predicting)
-      (patient ?PREDICT ?FORMULA))
-   (exists (?TIME)
-      (and
-         (holdsDuring ?TIME ?FORMULA)
-         (or
-            (before ?TIME (WhenFn ?PREDICT))
-            (earlier ?TIME (WhenFn ?PREDICT))))))
+;;;; <fcbr: inconsistency #20>
+;;;; (=>
+;;;;    (and
+;;;;       (instance ?PREDICT Predicting)
+;;;;       (patient ?PREDICT ?FORMULA))
+;;;;    (exists (?TIME)
+;;;;       (and
+;;;;          (holdsDuring ?TIME ?FORMULA)
+;;;;          (or
+;;;;             (before ?TIME (WhenFn ?PREDICT))
+;;;;             (earlier ?TIME (WhenFn ?PREDICT))))))
 
 (subclass Remembering PsychologicalProcess)
 (documentation Remembering EnglishLanguage "The &%Class of &%PsychologicalProcesses which 
 involve the recollection of prior experiences and/or of knowledge 
 which was previously acquired.")
 
-(=>
-   (and
-      (instance ?REMEMBER Remembering)
-      (patient ?REMEMBER ?FORMULA))
-   (exists (?TIME)
-      (and
-         (holdsDuring ?TIME ?FORMULA)
-         (or
-            (before ?TIME (WhenFn ?REMEMBER))
-            (earlier ?TIME (WhenFn ?REMEMBER))))))
+;;;; <fcbr: inconsistency #20>
+;;;; (=>
+;;;;    (and
+;;;;       (instance ?REMEMBER Remembering)
+;;;;       (patient ?REMEMBER ?FORMULA))
+;;;;    (exists (?TIME)
+;;;;       (and
+;;;;          (holdsDuring ?TIME ?FORMULA)
+;;;;          (or
+;;;;             (before ?TIME (WhenFn ?REMEMBER))
+;;;;             (earlier ?TIME (WhenFn ?REMEMBER))))))
 
 (subclass Keeping IntentionalProcess)
 (documentation Keeping EnglishLanguage "The &%Class of &%Processes where the &%agent 
@@ -13983,8 +14097,8 @@ intentionally broad, so as to capture a wide array of `familial'
 relations.  The notion of who counts as `family' also varies between
 cultures, but that aspect of meaning is not addressed here.")
 
-(subrelation familyRelation relative)
-(subrelation spouse relative)
+;;; <fcbr: contradiction #23> (subrelation familyRelation relative)
+;;; <fcbr: contradiction #23> (subrelation spouse relative)
 
 (=>
  (and
@@ -14023,7 +14137,7 @@ etc.")
 ;(subrelation parent ancestor)
 
 (instance parent BinaryPredicate)
-(subrelation parent familyRelation)
+;;;; <fcbr: contradiction 23#> (subrelation parent familyRelation)
 (instance parent AsymmetricRelation)
 (instance parent IntransitiveRelation)
 (instance parent TotalValuedRelation)
@@ -14065,7 +14179,7 @@ of ?CHILD.")
 
 (instance mother SingleValuedRelation)
 (instance mother PartialValuedRelation)
-(subrelation mother parent)
+;;;; <fcbr: contradiction #18> (subrelation mother parent)
 (domain mother 1 Organism)
 (domain mother 2 Organism)
 (documentation mother EnglishLanguage "The general relationship of motherhood.  
@@ -14078,7 +14192,7 @@ of ?CHILD.")
 
 (instance father SingleValuedRelation)
 (instance father PartialValuedRelation)
-(subrelation father parent)
+;;;; <fcbr: contradiction #18> (subrelation father parent)
 (domain father 1 Organism)
 (domain father 2 Organism)
 (documentation father EnglishLanguage "The general relationship of fatherhood.  
@@ -14217,7 +14331,7 @@ non-symmetric version of this predicate, &%acquaintance.")
 (domain spouse 2 Human)
 (documentation spouse EnglishLanguage "The relationship of marriage between two &%Humans.")
 
-(subrelation husband spouse)
+;;;; <fcbr: contradiction #23> (subrelation husband spouse)
 (instance husband AsymmetricRelation)
 (instance husband IrreflexiveRelation)
 (instance husband PartialValuedRelation)
@@ -14227,7 +14341,7 @@ non-symmetric version of this predicate, &%acquaintance.")
 (documentation husband EnglishLanguage "(&%husband ?MAN ?WOMAN) means that ?MAN is the 
 husband of ?WOMAN.")
 
-(subrelation wife spouse)
+;;;; <fcbr: contradiction #23> (subrelation wife spouse)
 (instance wife AsymmetricRelation)
 (instance wife IrreflexiveRelation)
 (domain wife 1 Woman)
